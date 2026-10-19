@@ -210,6 +210,5 @@ Total: 38 passed, 0 failed, 100% verified.
 
 ---
 
-## 📄 License
 
-MIT License. Built with precision for production-grade AI agent engineering.
+
