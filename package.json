@@ -1,0 +1,25 @@
+{
+  "name": "agentra",
+  "version": "1.0.0",
+  "description": "Agentra - Personal AI Productivity Agent",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "server": "npm --prefix server start",
+    "server:dev": "npm --prefix server run dev",
+    "client": "npm --prefix client dev",
+    "test": "npm --prefix server test",
+    "migrate": "npm --prefix server run migrate"
+  },
+  "keywords": [
+    "ai-agent",
+    "productivity",
+    "task-management",
+    "nodejs",
+    "express",
+    "postgresql",
+    "react"
+  ],
+  "author": "Agentra Team",
+  "license": "MIT"
+}

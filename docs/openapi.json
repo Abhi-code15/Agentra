@@ -1,0 +1,221 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Agentra REST API",
+    "version": "1.0.0",
+    "description": "REST API documentation for Agentra — Personal AI Productivity Agent"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new user account with email and password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "displayName"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "displayName": { "type": "string" },
+                  "timezone": { "type": "string", "default": "UTC" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Account created and session cookie established" },
+          "400": { "description": "Validation error" },
+          "409": { "description": "Email already registered" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate user with email and password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Authentication successful" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/google": {
+      "post": {
+        "summary": "Authenticate using verified Google ID token / OpenID Connect credential",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["credential"],
+                "properties": {
+                  "credential": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Google authentication successful" },
+          "401": { "description": "Invalid Google credential" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Revoke active session and clear authentication cookies",
+        "responses": {
+          "200": { "description": "Logged out successfully" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get authenticated user profile",
+        "responses": {
+          "200": { "description": "User profile returned" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "patch": {
+        "summary": "Update user display name and timezone",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayName": { "type": "string" },
+                  "timezone": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Profile updated" }
+        }
+      }
+    },
+    "/tasks": {
+      "get": {
+        "summary": "List tasks with pagination, filters, and sorting",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["pending", "in_progress", "completed", "cancelled"] } },
+          { "name": "priority", "in": "query", "schema": { "type": "string", "enum": ["low", "medium", "high"] } },
+          { "name": "filter", "in": "query", "schema": { "type": "string", "enum": ["all", "overdue", "upcoming", "today"] } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": { "description": "Paginated task list" }
+        }
+      },
+      "post": {
+        "summary": "Create a new task",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "priority": { "type": "string", "enum": ["low", "medium", "high"], "default": "medium" },
+                  "status": { "type": "string", "enum": ["pending", "in_progress", "completed", "cancelled"], "default": "pending" },
+                  "dueAt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Task created" }
+        }
+      }
+    },
+    "/tasks/{taskId}": {
+      "get": { "summary": "Get task by ID" },
+      "patch": { "summary": "Update task fields" },
+      "delete": { "summary": "Delete task by ID" }
+    },
+    "/tasks/{taskId}/complete": {
+      "post": { "summary": "Mark task completed shortcut" }
+    },
+    "/conversations": {
+      "get": { "summary": "List user conversations" },
+      "post": { "summary": "Create a new conversation" }
+    },
+    "/conversations/{conversationId}": {
+      "get": { "summary": "Get conversation metadata" },
+      "delete": { "summary": "Delete conversation and messages" }
+    },
+    "/conversations/{conversationId}/messages": {
+      "get": { "summary": "List message history for conversation" },
+      "post": {
+        "summary": "Send user message and invoke Agent Engine loop",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content"],
+                "properties": {
+                  "content": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Assistant response with tool execution metadata and action proposals" }
+        }
+      }
+    },
+    "/agent-runs/{runId}/proposals/{proposalId}/approve": {
+      "post": { "summary": "Approve and execute sensitive action proposal in a transaction" }
+    },
+    "/agent-runs/{runId}/proposals/{proposalId}/reject": {
+      "post": { "summary": "Reject pending action proposal" }
+    },
+    "/memories": {
+      "get": { "summary": "List saved long-term user memories" },
+      "post": { "summary": "Save a new long-term memory" }
+    },
+    "/health/live": {
+      "get": { "summary": "Liveness probe" }
+    },
+    "/health/ready": {
+      "get": { "summary": "Readiness probe verifying PostgreSQL connectivity" }
+    }
+  }
+}
